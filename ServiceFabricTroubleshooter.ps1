@@ -144,6 +144,7 @@ else
   if ( $sfbasicdetails.properties.clientCertificateThumbprints.Count -lt 1)
   {
               DisplayMessage -Message "No Client Admin Certificates Found. Please upload a certificate to your cluster , refer https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cluster-security-update-certs-azure " -Level Error
+			  return
   }
   
   else
@@ -193,7 +194,21 @@ DisplayMessage -Message "Connecting to cluster with below details.." -Level Info
 $connectArgs
 $sfconnection = Connect-ServiceFabricCluster @connectArgs -Verbose
 $sfmanifest = Get-ServiceFabricClusterManifest
-$sfmanifest
+
+$seednodes= Get-ServiceFabricNode | where {$_.IsSeedNode -eq "True"}
+$vmsinscaleset = $null
+
+if( $seednodes.Count -gt 0 )
+{
+   
+	$vmssname = $seednodes[0].NodeType
+	$vmsinscaleset = Get-AzureRmVmssVM -ResourceGroupName $resourcegroup -VMScaleSetName $vmssname
+	
+}
+
+$seednodes
+$vmsinscaleset
+
 }
 
 Catch
